@@ -3,6 +3,10 @@ export class AlarmId {
 }
 
 export class Alarm {
-    constructor(public id: AlarmId, public time: Date) {
+    constructor(public id: AlarmId, public time: Date,public acknowledged: boolean = false) {
+    }
+
+    acknowledge(){
+        this.acknowledged = true;
     }
 }
