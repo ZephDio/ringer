@@ -1,1 +1,1 @@
-create table alarm(id int,time timestamp);
+create table alarm(id int,time timestamp, acknowledged boolean);

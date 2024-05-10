@@ -3,10 +3,16 @@ import { CreateAlarmCommand, CreateAlarmCommandHandler } from "../applicative/co
 import { GetAlarmsQuery, GetAlarmsQueryHandler } from "../applicative/queries/get-alarms-query-handler";
 import { AcknowledgeAlarmCommand, AcknowledgeAlarmCommandHandler } from "../applicative/commands/acknowledge-alarm-command-handler";
 import { AlarmId } from "../domain/alarm";
+import { BackupMissedAlarmCommand, BackupMissedAlarmCommandHandler } from "../applicative/commands/backup-missed-alarm-command-handler";
 
 @Controller('alarms')
 export class AlarmController {
-    constructor(private readonly createAlarmCommandHandler: CreateAlarmCommandHandler,private readonly getAlarmsQueryHandler: GetAlarmsQueryHandler, private readonly acknowledgeAlarmCommandHandler: AcknowledgeAlarmCommandHandler) {
+    constructor(
+        private readonly createAlarmCommandHandler: CreateAlarmCommandHandler,
+        private readonly getAlarmsQueryHandler: GetAlarmsQueryHandler, 
+        private readonly acknowledgeAlarmCommandHandler: AcknowledgeAlarmCommandHandler,
+        private readonly backupMissedAlarmsCommandHandler: BackupMissedAlarmCommandHandler
+    ) {
     }
 
     @Post('create')
@@ -30,4 +36,12 @@ export class AlarmController {
         await this.acknowledgeAlarmCommandHandler.handle(command)
         return 'acknowledged'
     }
+
+    @Post('backup')
+    async backupAlarms() {
+        const command = new BackupMissedAlarmCommand();
+        this.backupMissedAlarmsCommandHandler.handle(command)
+        return 'backup-strategy-started'
+    }
+
 }

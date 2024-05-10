@@ -7,6 +7,11 @@ import { IdProvider, UuidIdProvider } from "../shared/id-provider";
 import { DateProvider, NodeDateProvider } from "../shared/date-provider";
 import { AcknowledgeAlarmCommandHandler } from "./applicative/commands/acknowledge-alarm-command-handler";
 import { GetAlarmsQueryHandler } from "./applicative/queries/get-alarms-query-handler";
+import { CoreModule } from "../shared/core-module";
+import { BackupMissedAlarmCommandHandler } from "./applicative/commands/backup-missed-alarm-command-handler";
+import { BackupService } from "./applicative/services/backup-service";
+import { PhoneSmsBackupStrategy } from "./infrastructure/backup-strategy/phone-sms";
+import { WebBrowserBackupStrategy } from "./infrastructure/backup-strategy/web-borwser";
 
 
 
@@ -14,20 +19,6 @@ const alarmStore = {
     provide: AlarmStore,
     useFactory: () => {
         return new AlarmStoreInMemory();
-    },
-};
-
-const idProvider = {
-    provide: IdProvider,
-    useFactory: () => {
-        return new UuidIdProvider();
-    },
-};
-
-const dateProvider = {
-    provide: DateProvider,
-    useFactory: () => {
-        return new NodeDateProvider();
     },
 };
 
@@ -47,6 +38,17 @@ const acknowledgeAlarmCommandHandler = {
     },
 };
 
+const backupMissedAlarmCommandHandler = {
+    provide: BackupMissedAlarmCommandHandler,
+    inject: [AlarmStore],
+    useFactory: (alarmStore: AlarmStore, dateProvider: DateProvider) => {
+        const webBrowserStrategy = new WebBrowserBackupStrategy();
+        const smsStrategy = new PhoneSmsBackupStrategy();
+        const backupService = new BackupService([webBrowserStrategy, smsStrategy]);
+        return new BackupMissedAlarmCommandHandler(alarmStore, backupService,dateProvider);
+    },
+};
+
 const getAlarmsQueryHandler = { 
     provide: GetAlarmsQueryHandler,
     inject: [AlarmStore, DateProvider],
@@ -56,12 +58,12 @@ const getAlarmsQueryHandler = {
 }
 
 const stores = [alarmStore]
-const core = [idProvider, dateProvider]
-const commands = [createAlarmCommandHandler, acknowledgeAlarmCommandHandler];
+const commands = [createAlarmCommandHandler, acknowledgeAlarmCommandHandler, backupMissedAlarmCommandHandler];
 const queries = [getAlarmsQueryHandler];
 
 @Module({
+    imports: [CoreModule],
     controllers: [AlarmController],
-    providers: [...stores, ...core , ...commands, ...queries],
+    providers: [...stores, ...commands, ...queries]
 })
 export class AlarmModule { }

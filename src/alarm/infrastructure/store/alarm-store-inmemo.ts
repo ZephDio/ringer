@@ -24,4 +24,8 @@ export class AlarmStoreInMemory implements AlarmStore {
         if (!alarm) throw new Error(`Alarm with id ${id} not found`);
         return alarm;
     }
+
+    async getMissedAlarmsFrom(now : Date){
+        return this.store.filter(alarm => alarm.time.getTime() < now.getTime() && !alarm.acknowledged);
+    }
 }
