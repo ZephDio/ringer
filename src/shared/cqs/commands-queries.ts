@@ -11,5 +11,5 @@ export abstract class Query {
 }
 
 export abstract class QueryHandler<T extends Query> {
-    abstract handle(command: T): Promise<any> | AsyncGenerator<any>;
+    abstract handle(command: T): Promise<any>
 }
